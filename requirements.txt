@@ -1,4 +1,4 @@
-# Dependencias mínimas para el proyecto
+# Dependencias para el proyecto
 pandas>=2.0.0
 mysql-connector-python>=8.0.33
 sqlalchemy>=2.0.0

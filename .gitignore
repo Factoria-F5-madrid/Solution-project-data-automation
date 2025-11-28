@@ -1,0 +1,47 @@
+# .gitignore
+# Python
+__pycache__/
+src/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+
+# Entorno virtual
+venv/
+.venv/
+env/
+ENV/
+
+# Variables de entorno (IMPORTANTE - NUNCA SUBIR)
+.env
+
+# Archivos de salida generados
+output/*.csv
+
+# Excel temporal y lockfiles
+~$*.xlsx
+~$*.xlsm
+*.tmp
+.~lock.*
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Dashboard de Excel (opcional - descomenta si NO quieres subirlo)
+# Sakila_Dashboard.xlsx
+
+#docs
+docs/

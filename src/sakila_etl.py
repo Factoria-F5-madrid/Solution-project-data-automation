@@ -1,9 +1,9 @@
-# sakila_etl.py
+# src/sakila_etl.py
 # Proceso ETL para base de datos Sakila
 import pandas as pd
 from sqlalchemy import create_engine
 import os
-from config import *
+from .config import *
 
 def conectar_bd():
     """Crear conexión a la base de datos"""
