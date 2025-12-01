@@ -7,4 +7,4 @@ Este paquete contiene toda la lógica del proyecto:
 """
 
 __version__ = "1.0.0"
-__author__ = "Data Analyst Student"
+__author__ = "Data Analyst"

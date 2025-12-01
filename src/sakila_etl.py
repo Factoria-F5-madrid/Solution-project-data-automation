@@ -17,24 +17,28 @@ def extraer_datos():
     
     engine = conectar_bd()
     
-    # Query simplificada
+    # Query para análisis de clientes
     query = """
     SELECT 
-        DATE(r.rental_date) as fecha_renta,
         c.customer_id,
         CONCAT(c.first_name, ' ', c.last_name) as cliente,
-        f.title as pelicula,
-        cat.name as categoria,
+        c.email,
+        c.active,
+        a.address,
+        a.district,
+        a.postal_code,
+        ci.city,
+        co.country,
+        DATE(r.rental_date) as fecha_renta,
+        DATE(r.return_date) as fecha_devolucion,
         p.amount as monto,
-        s.store_id as tienda
-    FROM rental r
-    JOIN payment p ON r.rental_id = p.rental_id
-    JOIN customer c ON r.customer_id = c.customer_id
-    JOIN inventory i ON r.inventory_id = i.inventory_id
-    JOIN film f ON i.film_id = f.film_id
-    JOIN film_category fc ON f.film_id = fc.film_id
-    JOIN category cat ON fc.category_id = cat.category_id
-    JOIN store s ON i.store_id = s.store_id
+        DATE(p.payment_date) as fecha_pago
+    FROM customer c
+    JOIN address a ON c.address_id = a.address_id
+    JOIN city ci ON a.city_id = ci.city_id
+    JOIN country co ON ci.country_id = co.country_id
+    JOIN rental r ON c.customer_id = r.customer_id
+    JOIN payment p ON p.rental_id = r.rental_id
     """
     
     df = pd.read_sql(query, engine)
@@ -42,48 +46,68 @@ def extraer_datos():
     return df
 
 def transformar_datos(df):
-    """Transformar y analizar datos"""
+    """Transformar y limpiar datos principales + crear datasets para tablas dinámicas"""
     print("🔄 Transformando datos...")
     
-    # 1. Resumen diario
-    resumen_diario = df.groupby('fecha_renta').agg({
-        'monto': 'sum',
-        'customer_id': 'nunique',
-        'pelicula': 'count'
-    }).reset_index()
-    resumen_diario.columns = ['Fecha', 'Ingresos', 'Clientes', 'Rentas']
+    # Dataset principal con columnas adicionales
+    df['nombre_completo'] = df['cliente']
+    df['año_renta'] = pd.to_datetime(df['fecha_renta']).dt.year
+    df['mes_renta'] = pd.to_datetime(df['fecha_renta']).dt.month
+    df['dia_semana'] = pd.to_datetime(df['fecha_renta']).dt.day_name()
+    df['estado_cliente'] = df['active'].map({1: 'Activo', 0: 'Inactivo'})
     
-    # 2. Top películas
-    top_peliculas = df.groupby('pelicula').agg({
+    # 1. Resumen por fechas (para gráfico temporal)
+    resumen_fechas = df.groupby('fecha_renta').agg({
         'monto': 'sum',
-        'customer_id': 'count'
+        'customer_id': ['nunique', 'count']
     }).reset_index()
-    top_peliculas.columns = ['Pelicula', 'Ingresos', 'Total_Rentas']
-    top_peliculas = top_peliculas.sort_values('Ingresos', ascending=False).head(20)
+    resumen_fechas.columns = ['Fecha', 'Ingresos_Total', 'Clientes_Unicos', 'Transacciones']
     
-    # 3. Por categoría
-    por_categoria = df.groupby('categoria').agg({
+    # 2. Análisis por país
+    por_pais = df.groupby('country').agg({
+        'monto': ['sum', 'mean', 'count'],
+        'customer_id': 'nunique'
+    }).reset_index()
+    por_pais.columns = ['Pais', 'Ingresos_Total', 'Ingreso_Promedio', 'Total_Transacciones', 'Clientes_Unicos']
+    por_pais = por_pais.sort_values('Ingresos_Total', ascending=False)
+    
+    # 3. Análisis por ciudad (top 20)
+    por_ciudad = df.groupby(['country', 'city']).agg({
+        'monto': ['sum', 'mean'],
+        'customer_id': 'nunique'
+    }).reset_index()
+    por_ciudad.columns = ['Pais', 'Ciudad', 'Ingresos_Total', 'Ingreso_Promedio', 'Clientes_Unicos']
+    por_ciudad = por_ciudad.sort_values('Ingresos_Total', ascending=False).head(20)
+    
+    # 4. Análisis de clientes
+    clientes_resumen = df.groupby(['customer_id', 'nombre_completo', 'country', 'city', 'estado_cliente']).agg({
+        'monto': ['sum', 'mean', 'count']
+    }).reset_index()
+    clientes_resumen.columns = ['Customer_ID', 'Cliente', 'Pais', 'Ciudad', 'Estado', 'Total_Gastado', 'Gasto_Promedio', 'Num_Transacciones']
+    clientes_resumen = clientes_resumen.sort_values('Total_Gastado', ascending=False)
+    
+    # 5. Análisis temporal (por mes/año)
+    df['mes_año'] = pd.to_datetime(df['fecha_renta']).dt.to_period('M').astype(str)
+    por_mes = df.groupby('mes_año').agg({
         'monto': 'sum',
-        'pelicula': 'count'
+        'customer_id': ['nunique', 'count']
     }).reset_index()
-    por_categoria.columns = ['Categoria', 'Ingresos', 'Total_Rentas']
+    por_mes.columns = ['Mes_Año', 'Ingresos_Total', 'Clientes_Unicos', 'Transacciones']
     
-    print("✓ Datos transformados")
-    return resumen_diario, top_peliculas, por_categoria
+    print("✓ Datos transformados con 5 datasets listos para Excel")
+    return df, resumen_fechas, por_pais, por_ciudad, clientes_resumen, por_mes
 
-def guardar_archivos(resumen_diario, top_peliculas, por_categoria):
-    """Guardar archivos CSV"""
-    print("💾 Guardando archivos...")
+def guardar_archivos(df_principal):
+    """Guardar archivo CSV principal"""
+    print("💾 Guardando archivo principal...")
     
     # Crear carpeta si no existe
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     
-    # Guardar CSVs
-    resumen_diario.to_csv(f'{OUTPUT_FOLDER}/resumen_diario.csv', index=False)
-    top_peliculas.to_csv(f'{OUTPUT_FOLDER}/top_peliculas.csv', index=False)
-    por_categoria.to_csv(f'{OUTPUT_FOLDER}/por_categoria.csv', index=False)
+    # Guardar CSV principal
+    df_principal.to_csv(f'{OUTPUT_FOLDER}/datos_sakila.csv', index=False)
     
-    print(f"✓ Archivos guardados en carpeta '{OUTPUT_FOLDER}/'")
+    print(f"✓ Archivo principal guardado en '{OUTPUT_FOLDER}/datos_sakila.csv'")
     return True
 
 def proceso_completo():
@@ -93,12 +117,20 @@ def proceso_completo():
         df = extraer_datos()
         
         # Transformar
-        resumen_diario, top_peliculas, por_categoria = transformar_datos(df)
+        df_transformado, resumen_fechas, por_pais, por_ciudad, clientes_resumen, por_mes = transformar_datos(df)
         
-        # Guardar
-        guardar_archivos(resumen_diario, top_peliculas, por_categoria)
+        # Guardar CSV principal
+        guardar_archivos(df_transformado)
         
-        return True
+        # Retornar todos los datasets para el dashboard
+        return {
+            'datos_principales': df_transformado,
+            'resumen_fechas': resumen_fechas,
+            'por_pais': por_pais,
+            'por_ciudad': por_ciudad,
+            'clientes_resumen': clientes_resumen,
+            'por_mes': por_mes
+        }
     except Exception as e:
         print(f"❌ Error: {e}")
         return False
