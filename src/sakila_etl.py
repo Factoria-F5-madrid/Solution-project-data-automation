@@ -39,75 +39,37 @@ def extraer_datos():
     JOIN country co ON ci.country_id = co.country_id
     JOIN rental r ON c.customer_id = r.customer_id
     JOIN payment p ON p.rental_id = r.rental_id
-    """
-    
+    """   
     df = pd.read_sql(query, engine)
     print(f"✓ {len(df)} registros extraídos")
     return df
 
 def transformar_datos(df):
-    """Transformar y limpiar datos principales + crear datasets para tablas dinámicas"""
+    """Transformar y limpiar datos"""
     print("🔄 Transformando datos...")
     
-    # Dataset principal con columnas adicionales
+    # Agregar columnas útiles
     df['nombre_completo'] = df['cliente']
     df['año_renta'] = pd.to_datetime(df['fecha_renta']).dt.year
     df['mes_renta'] = pd.to_datetime(df['fecha_renta']).dt.month
     df['dia_semana'] = pd.to_datetime(df['fecha_renta']).dt.day_name()
     df['estado_cliente'] = df['active'].map({1: 'Activo', 0: 'Inactivo'})
-    
-    # 1. Resumen por fechas (para gráfico temporal)
-    resumen_fechas = df.groupby('fecha_renta').agg({
-        'monto': 'sum',
-        'customer_id': ['nunique', 'count']
-    }).reset_index()
-    resumen_fechas.columns = ['Fecha', 'Ingresos_Total', 'Clientes_Unicos', 'Transacciones']
-    
-    # 2. Análisis por país
-    por_pais = df.groupby('country').agg({
-        'monto': ['sum', 'mean', 'count'],
-        'customer_id': 'nunique'
-    }).reset_index()
-    por_pais.columns = ['Pais', 'Ingresos_Total', 'Ingreso_Promedio', 'Total_Transacciones', 'Clientes_Unicos']
-    por_pais = por_pais.sort_values('Ingresos_Total', ascending=False)
-    
-    # 3. Análisis por ciudad (top 20)
-    por_ciudad = df.groupby(['country', 'city']).agg({
-        'monto': ['sum', 'mean'],
-        'customer_id': 'nunique'
-    }).reset_index()
-    por_ciudad.columns = ['Pais', 'Ciudad', 'Ingresos_Total', 'Ingreso_Promedio', 'Clientes_Unicos']
-    por_ciudad = por_ciudad.sort_values('Ingresos_Total', ascending=False).head(20)
-    
-    # 4. Análisis de clientes
-    clientes_resumen = df.groupby(['customer_id', 'nombre_completo', 'country', 'city', 'estado_cliente']).agg({
-        'monto': ['sum', 'mean', 'count']
-    }).reset_index()
-    clientes_resumen.columns = ['Customer_ID', 'Cliente', 'Pais', 'Ciudad', 'Estado', 'Total_Gastado', 'Gasto_Promedio', 'Num_Transacciones']
-    clientes_resumen = clientes_resumen.sort_values('Total_Gastado', ascending=False)
-    
-    # 5. Análisis temporal (por mes/año)
     df['mes_año'] = pd.to_datetime(df['fecha_renta']).dt.to_period('M').astype(str)
-    por_mes = df.groupby('mes_año').agg({
-        'monto': 'sum',
-        'customer_id': ['nunique', 'count']
-    }).reset_index()
-    por_mes.columns = ['Mes_Año', 'Ingresos_Total', 'Clientes_Unicos', 'Transacciones']
     
-    print("✓ Datos transformados con 5 datasets listos para Excel")
-    return df, resumen_fechas, por_pais, por_ciudad, clientes_resumen, por_mes
+    print("✓ Datos transformados correctamente")
+    return df
 
-def guardar_archivos(df_principal):
+def guardar_csv(df):
     """Guardar archivo CSV principal"""
-    print("💾 Guardando archivo principal...")
+    print("💾 Guardando CSV...")
     
     # Crear carpeta si no existe
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     
-    # Guardar CSV principal
-    df_principal.to_csv(f'{OUTPUT_FOLDER}/datos_sakila.csv', index=False)
+    # Guardar CSV
+    df.to_csv(f'{OUTPUT_FOLDER}/datos_sakila.csv', index=False, encoding='utf-8-sig')
     
-    print(f"✓ Archivo principal guardado en '{OUTPUT_FOLDER}/datos_sakila.csv'")
+    print(f"✓ CSV guardado en '{OUTPUT_FOLDER}/datos_sakila.csv'")
     return True
 
 def proceso_completo():
@@ -117,23 +79,18 @@ def proceso_completo():
         df = extraer_datos()
         
         # Transformar
-        df_transformado, resumen_fechas, por_pais, por_ciudad, clientes_resumen, por_mes = transformar_datos(df)
+        df_transformado = transformar_datos(df)
         
         # Guardar CSV principal
-        guardar_archivos(df_transformado)
+        guardar_csv(df_transformado)
         
-        # Retornar todos los datasets para el dashboard
+        # Retornar dataset para el dashboard
         return {
-            'datos_principales': df_transformado,
-            'resumen_fechas': resumen_fechas,
-            'por_pais': por_pais,
-            'por_ciudad': por_ciudad,
-            'clientes_resumen': clientes_resumen,
-            'por_mes': por_mes
+            'datos_principales': df_transformado
         }
     except Exception as e:
         print(f"❌ Error: {e}")
-        return False
+        return None
 
 if __name__ == "__main__":
     proceso_completo()

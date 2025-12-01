@@ -15,33 +15,28 @@ from src.config import EXCEL_FILE, AUTO_OPEN_EXCEL, OUTPUT_FOLDER
 
 def ejecutar_proceso_completo():
     """Ejecutar proceso ETL completo + generación de Excel con múltiples hojas"""
-    print("🚀 Iniciando proceso completo ETL + Excel Multi-Hojas")
+    print("🚀 Iniciando automatización de datos Sakila")
     print("=" * 60)
     
-    # Ejecutar proceso completo (ETL + Excel)
-    print("PASO ÚNICO: Ejecutando ETL + Generando Excel...")
+    # Ejecutar ETL + Generar/Actualizar archivos
+    exito = crear_dashboard()
     
-    try:
-        from src.dashboard_excel import crear_dashboard
-        if crear_dashboard():
-            print("\n🎉 Proceso completo terminado exitosamente!")
-            print("📁 Revisa la carpeta 'output' para los archivos generados")
-            print("\n📋 ARCHIVOS CREADOS:")
-            print("  • datos_sakila.csv - Datos completos en CSV")
-            print("  • dashboard_sakila.xlsx - Excel con múltiples hojas de datos")
-            print("\n🎯 SIGUIENTE PASO:")
-            print("  1. Abre dashboard_sakila.xlsx")
-            print("  2. Diseña tu dashboard manualmente usando las hojas disponibles")
-            print("  3. Para actualizar datos: ejecuta 'python main.py' nuevamente")
-            print("  4. Tu diseño se mantendrá, solo se actualizarán los datos")
-        else:
-            print("❌ Error en el proceso")
-            return False
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return False
+    if exito:
+        print("\n" + "="*60)
+        print("✅ Proceso completado exitosamente")
+        print("="*60)
+        print("\n📁 ARCHIVOS:")
+        print("   • output/datos_sakila.csv - Datos actualizados")
+        print("   • dashboard/dashboard_sakila.xlsx - Dashboard Excel")
+        print("\n🔄 SIGUIENTE:")
+        print("   1. Abre Excel")
+        print("   2. Presiona F5 para actualizar")
+        print("="*60)
+    else:
+        print("\n❌ Error en el proceso")
     
-    return True
+    print("\n")
+    input("Presiona ENTER para salir...")
 
 if __name__ == "__main__":
     try:
