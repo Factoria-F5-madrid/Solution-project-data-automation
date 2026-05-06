@@ -67,4 +67,4 @@ Después de ejecutar `python main.py`:
 
 ## 📖 Más Información
 
-Ver **`docs/GUIA_EXCEL.md`** para instrucciones detalladas sobre cómo crear y configurar el dashboard.
+Ver **`dashboard/README.md`** (este archivo) para instrucciones sobre cómo crear y configurar el dashboard.

@@ -51,7 +51,7 @@ def main():
             else:
                 print(f"\n⚠️  Archivo Excel no encontrado: {EXCEL_FILE}")
                 print(f"   Crea el archivo en la carpeta 'dashboard/' y vuelve a ejecutar")
-                print(f"\n💡 Ver: dashboard/README.md y docs/GUIA_EXCEL.md para instrucciones")
+                print(f"\n💡 Ver: dashboard/README.md para instrucciones")
         
         # Resumen final
         print("\n" + "="*50)

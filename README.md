@@ -9,8 +9,6 @@ Automatiza el análisis de la base de datos Sakila: extrae datos de MySQL, los t
 ## 📖 Documentación
 
 - **README.md** (este archivo) - Guía completa del proyecto
-- **GUIA_RAPIDA.md** - Inicio rápido en 3 pasos
-- **GUIA_EXCEL.md** - Cómo crear tu dashboard de Excel sin macros
 
 ---
 
@@ -50,10 +48,11 @@ project-data-automation/
 │   ├── Sakila_Dashboard.xlsx  (tu dashboard de Excel)
 │   └── README.md              (guía del dashboard)
 │
-├── docs/                      📚 Documentación
-│   ├── GUIA_RAPIDA.md         (inicio rápido - 3 pasos)
-│   ├── GUIA_EXCEL.md          (cómo crear dashboard)
-│   └── PROYECTO_COMPLETO.md   (resumen del proyecto)
+├── queries/                   🗄️  Consultas SQL
+│   ├── resumen_diario.sql
+│   ├── top_peliculas.sql
+│   ├── por_categoria.sql
+│   └── por_tienda.sql
 │
 ├── requirements.txt           (dependencias Python)
 ├── .env                       🔒 Credenciales (configurado ✓)
@@ -66,7 +65,7 @@ project-data-automation/
 - **src/** = Procesamiento (Python)
 - **output/** = Datos intermedios (CSVs)
 - **dashboard/** = Visualización (Excel)
-- **docs/** = Documentación
+- **queries/** = Consultas SQL
 
 **🔒 IMPORTANTE:** El archivo `.env` contiene tus credenciales y NO se sube a Git (está en `.gitignore`)
 
@@ -120,7 +119,7 @@ Crea tu archivo Excel en la carpeta `dashboard/`:
 - `Top Peliculas` - Para conectar `../output/top_peliculas.csv`
 - `Por Categoria` - Para conectar `../output/por_categoria.csv`
 
-**📖 Ver:** `dashboard/README.md` y `docs/GUIA_EXCEL.md` para instrucciones detalladas
+**📖 Ver:** `dashboard/README.md` para instrucciones detalladas
 
 ---
 
@@ -344,7 +343,7 @@ pip install -r requirements.txt
 | **output/** | Datos procesados (CSVs generados automáticamente) |
 | **dashboard/** | Visualización (dashboard de Excel) |
 | **dashboard/Sakila_Dashboard.xlsx** | Tu dashboard de Excel con gráficos |
-| **docs/** | Documentación del proyecto (3 guías + readme) |
+| **queries/** | Consultas SQL ejecutadas directamente por el ETL |
 | **.env** | 🔒 CREDENCIALES (NO subir a Git) |
 | **.env.example** | Plantilla para crear tu .env |
 | **.gitignore** | Archivos que Git debe ignorar |
