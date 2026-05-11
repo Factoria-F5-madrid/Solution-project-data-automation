@@ -58,10 +58,13 @@ def main():
         print("✅ PROCESO COMPLETADO")
         print("="*50)
         print(f"\n📂 Archivos generados en '{OUTPUT_FOLDER}/':")
-        print("   • resumen_diario.csv")
-        print("   • top_peliculas.csv")
-        print("   • por_categoria.csv")
-        print("\n💾 Los archivos CSV están listos para Excel")
+        print("   • fact_rentas.csv   (tabla de hechos)")
+        print("   • dim_pelicula.csv  (dimensión)")
+        print("   • dim_categoria.csv (dimensión)")
+        print("   • dim_tienda.csv    (dimensión)")
+        print("   • dim_cliente.csv   (dimensión)")
+        print("   • dim_fecha.csv     (dimensión)")
+        print("\n💾 CSVs listos para cargar en Power Query y modelar en Power Pivot")
         
     else:
         print("\n" + "="*50)

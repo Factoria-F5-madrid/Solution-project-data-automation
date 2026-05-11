@@ -12,11 +12,16 @@ from .config import *
 QUERIES_DIR = Path(__file__).parent.parent / 'queries'
 
 # Mapeo: nombre_de_archivo_sql → nombre_de_archivo_csv
+# Modelo estrella: 1 tabla de hechos + 5 dimensiones
 CONSULTAS = {
-    'resumen_diario.sql': 'resumen_diario.csv',
-    'top_peliculas.sql':  'top_peliculas.csv',
-    'por_categoria.sql':  'por_categoria.csv',
-    'por_tienda.sql':     'por_tienda.csv',
+    # HECHO — granularidad: una fila por renta
+    'fact_rentas.sql':    'fact_rentas.csv',
+    # DIMENSIONES
+    'dim_pelicula.sql':   'dim_pelicula.csv',
+    'dim_categoria.sql':  'dim_categoria.csv',
+    'dim_tienda.sql':     'dim_tienda.csv',
+    'dim_cliente.sql':    'dim_cliente.csv',
+    'dim_fecha.sql':      'dim_fecha.csv',
 }
 
 def conectar_bd():
